@@ -13,24 +13,17 @@ require 'utility-functions'
 @bd = app("BibDesk").document
 
 def send_citation(bibtex, hashkey)
-  @user = 'user'
-  @pass = 'password'
-  @host = 'localhost'
-  @port = '3000'
+  host = 'stormy-leaf-9036.herokuapp.com'
+  port = '80'
 
-  @post_ws = "/citations"
+  post_ws = "/citations"
+  token = "CKwyA5hpKUDaxENtu4YM"
 
-  @payload ={ "bibtex" => bibtex, "hashkey" => hashkey }.to_json
+  payload ={ "bibtex" => bibtex, "token" => token }.to_json
     
-  def post
-    req = Net::HTTP::Post.new(@post_ws, initheader = {'Content-Type' =>'application/json'})
-    req.basic_auth @user, @pass
-    req.body = @payload
-    response = Net::HTTP.new(@host, @port).start {|http| http.request(req) }
-    puts "Response #{response.code} #{response.body} #{response.message}"
-  end
-
-  post
+  req = Net::HTTP::Post.new("/citations", initheader = {'Content-Type' =>'application/json'})
+  req.body = payload
+  response = Net::HTTP.new(host, port).start {|http| http.request(req) }
 end
 
 
@@ -40,7 +33,6 @@ if ARGV[0] == "batch"
   Dir[path].select  do |f| 
     fname = File.basename(f)
     citekey = fname[0..-5]
-    puts citekey
     begin
       bibtx = @bd.search({:for =>citekey})[0].BibTeX_string.get.to_s
       hash = hashsum(f)
@@ -51,6 +43,6 @@ if ARGV[0] == "batch"
     end
     c = c+1
   end
-  puts "Total #{c} entries added"
+  puts "Total #{c} entries sent"
 end
 
